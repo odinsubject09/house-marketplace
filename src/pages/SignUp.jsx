@@ -9,6 +9,7 @@ import { setDoc, doc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase.config'
 import { ReactComponent as ArrowRightIcon } from '../assets/svg/keyboardArrowRightIcon.svg'
 import visibilityIcon from '../assets/svg/visibilityIcon.svg'
+import { toast } from 'react-toastify'
 
 function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
@@ -54,6 +55,7 @@ function SignUp() {
 
       navigate('/')
     } catch (error) {
+      toast.error('Something went wrong with registration')
     }
   }
 
