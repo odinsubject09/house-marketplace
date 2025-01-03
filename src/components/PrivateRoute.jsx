@@ -4,9 +4,8 @@ import Spinner from './Spinner'
 
 const PrivateRoute = () => {
     const { loggedIn, checkingStatus } = useAuthStatus()
-
     if (checkingStatus) {
-        <Spinner />
+        return <Spinner />
     }
     return loggedIn ? <Outlet /> : <Navigate to='/sign-in' />
 }

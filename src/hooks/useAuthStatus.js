@@ -7,7 +7,7 @@ export const useAuthStatus = () => {
   const isMounted = useRef(true)
 
   useEffect(()=>{
-    if(isMounted)
+    if(isMounted.current)
     {
         const auth=getAuth()
         onAuthStateChanged(auth,(user)=>{
