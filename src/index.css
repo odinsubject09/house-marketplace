@@ -2,7 +2,17 @@
 html, body {
   height: 100%;
 }
-
+body, html {
+  overflow: auto;
+}
+button {
+  cursor: pointer;
+}
+.formRow {
+  display: flex;
+  align-items: center; /* Aligns items vertically centered */
+  gap: 10px; /* Adds space between input and text */
+}
 /* Remove default list styles */
 ul, ol {
   list-style: none;
