@@ -34,7 +34,7 @@ function Navbar() {
                   ? 'navbarListItemNameActive'
                   : 'navbarListItemName'
               }
-            >Offer</p>
+            >Offers</p>
           </li>
           <li className='navbarListItem' onClick={()=>navigate('/profile')}>
             <PersonOutlineIcon fill={pathMatchRoute('/profile') ? '#2c2c2c' : '#8f8f8f'} width='36px' height='36px'/>
