@@ -1,21 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { useNavigate } from 'react-router-dom'
-import Spinner from '../components/Spinner'
-import { toast } from 'react-toastify'
-import {
-    getStorage,
-    ref,
-    uploadBytesResumable,
-    getDownloadURL,
-  } from 'firebase/storage'
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase.config'
-import { v4 as uuidv4 } from 'uuid'//for creating unique ids for each img file
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { v4 as uuidv4 } from 'uuid'
+import Spinner from '../components/Spinner'
+import { storage } from '../firebase.config'
 
 function CreateListing() {
-    const [geolocationEnabled, setGeolocationEnabled] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState({
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [formData, setFormData] = useState({
     type: 'rent',
     name: '',
     bedrooms: 1,
@@ -26,10 +23,11 @@ function CreateListing() {
     offer: false,
     regularPrice: 0,
     discountedPrice: 0,
-    imageUrls: {},
+    imageUrls: [], // Changed from 'images' to 'imageUrls'
     latitude: 0,
     longitude: 0,
   })
+
   const {
     type,
     name,
@@ -41,135 +39,146 @@ function CreateListing() {
     offer,
     regularPrice,
     discountedPrice,
-    imageUrls,
+    imageUrls, // Updated field
     latitude,
     longitude,
-  } = formData//destructuring
+  } = formData
 
-    const auth=getAuth()
-    const navigate = useNavigate()
-    const isMounted = useRef(true)
-    const onSubmit = async (e) => {
-        e.preventDefault()
+  const auth = getAuth()
+  const navigate = useNavigate()
+  const isMounted = useRef(true)
 
-        setLoading(true)
+  const [uploadedCount, setUploadedCount] = useState(0);
 
-        if (discountedPrice >= regularPrice) {
-          setLoading(false)
-          toast.error('Discounted price needs to be less than regular price')
-          return
+  useEffect(() => {
+    if (isMounted) {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setFormData({ ...formData, userRef: user.uid })
+        } else {
+          navigate('/sign-in')
         }
+      })
+    }
 
-        if (imageUrls.length > 6) {
-            setLoading(false)
-            toast.error('Max 6 images')
-            return
-          }
-        
-        let geolocation={}
-        let location
-        
-        if(geolocationEnabled)
-        {
-            
-        }
-        else
-        {
-            location.lat=latitude
-            geolocation.lng = longitude
-            location = address
-        }
-        const storeImage = async (image) => {
-            return new Promise((resolve, reject) => {//return a promise containing the download Url of the image
-              const storage = getStorage()//initialsie storage
-              const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`//created a filename
-              const storageRef = ref(storage, 'imageUrls/' + fileName)//create a reference to the file at location images/filename
-              const uploadTask = uploadBytesResumable(storageRef, image)
-              uploadTask.on(
-                'state_changed',
-                (snapshot) => {
-                  const progress =
-                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                  console.log('Upload is ' + progress + '% done')
-                  switch (snapshot.state) {
-                    case 'paused':
-                      console.log('Upload is paused')
-                      break
-                    case 'running':
-                      console.log('Upload is running')
-                      break
-                  }
-                },
-                (error) => {
-                  reject(error)
-                },
-                () => {
-                  getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    resolve(downloadURL)//get this back from the promise ,thus we will get a array of downloadUrls for all the image
-                  })
-                }
-              )
-            })
-          }
-          const imgUrls = await Promise.all(
-            [...imageUrls].map((image) => storeImage(image))
-          ).catch(() => {
-            setLoading(false)
-            toast.error('Images not uploaded')
-            return
-          })
-        //imgUrls contains download urls of all img
-          
-        setLoading(false)
-      }
+    return () => {
+      isMounted.current = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted])
 
+  const onSubmit = async (e) => {
+    e.preventDefault()
 
-    const onMutate = (e) => {
-        let boolean=null
-        //convert to boolean since dom accepts it as string
-        if (e.target.value === 'true') {
-            boolean = true
-          }
-          if (e.target.value === 'false') {
-            boolean = false
-          }
-        //Handle file input
-        if (e.target.files/*array of files if the file input is triggered*/) {
+    setLoading(true)
 
-            setFormData((prevState) => ({//prevState is a object so {} used
-              ...prevState,
-              imageUrls: e.target.files,
-            }))
-          }
-        //Handle other inputs
-        if (!e.target.files) {
-            setFormData((prevState) => ({
-              ...prevState,
-              [e.target.id]: boolean ?? e.target.value,
-            }))
-          }
-      }
+    if (discountedPrice >= regularPrice) {
+      setLoading(false)
+      toast.error('Discounted price needs to be less than regular price')
+      return
+    }
+
+    if (imageUrls.length > 6) { // Updated from 'images' to 'imageUrls'
+      setLoading(false)
+      toast.error('Max 6 images')
+      return
+    }
+
+    let geolocation = {}
+    let location
+
+    if (geolocationEnabled) {
+      
+    } else {
+      geolocation.lat = latitude
+      geolocation.lng = longitude
+      location = address
+    }
+
+    // Store image in firebase
+    const storeImage = async (image) => {
     
-    useEffect(()=>{
-        if(isMounted)
-        {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                  setFormData({ ...formData, userRef: user.uid })
-                } else {
-                  navigate('/sign-in')
-                }
-              })
-        }
+      const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
 
-        return ()=>{
-            isMounted.current=false
-        }
-    },[isMounted])
+      const storageRef = ref(storage, 'imageUrls/' + fileName)
 
-    if (loading) {
-        return <Spinner />
-      }
+      return new Promise((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(storageRef, image)
+
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {},
+          (error) => {
+            reject(error)
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+            resolve(downloadURL)
+          }
+        )
+      })
+    }
+
+    const imgUrls = await Promise.all(
+      [...imageUrls].map((image) => storeImage(image)) // Updated from 'images' to 'imageUrls'
+    ).catch(() => {
+      setLoading(false)
+      toast.error('Images not uploaded')
+      return
+    })
+
+    const formDataCopy = {
+      ...formData,
+      imgUrls,
+      geolocation,
+      timestamp: serverTimestamp(),
+    }
+    console.log(imgUrls)
+    setLoading(false)
+    delete formDataCopy.imageUrls // Updated from 'images'
+    delete formDataCopy.address
+    location && (formDataCopy.location = location)
+    !formDataCopy.offer && delete formDataCopy.discountedPrice
+    console.log(formDataCopy)
+    const docRef = await addDoc(collection(db, 'listings'), formDataCopy)
+    setLoading(false)
+    toast.success('Listing saved')
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`)
+  }
+
+  const onMutate = (e) => {
+    let boolean = null
+
+    if (e.target.value === 'true') {
+      boolean = true
+    }
+    if (e.target.value === 'false') {
+      boolean = false
+    }
+
+    // Files
+    if (e.target.files) {
+      // Convert FileList to an array
+      const newFiles = [...e.target.files];
+      setFormData((prevState) => ({
+        ...prevState,
+        imageUrls: [...(prevState.imageUrls || []), ...newFiles],// Assign a true array
+      }));
+      setUploadedCount((prevCount) => prevCount + newFiles.length);
+    }
+
+    // Text/Booleans/Numbers
+    if (!e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [e.target.id]: boolean ?? e.target.value,
+      }))
+    }
+  }
+
+  if (loading) {
+    return <Spinner />
+  }
 
   return (
     <div className='profile'>
@@ -184,8 +193,8 @@ function CreateListing() {
             <button
               type='button'
               className={type === 'sale' ? 'formButtonActive' : 'formButton'}
-              id='type'//id must be the key in db
-              value='sale'//value is the value in db
+              id='type'
+              value='sale'
               onClick={onMutate}
             >
               Sell
@@ -200,6 +209,7 @@ function CreateListing() {
               Rent
             </button>
           </div>
+
           <label className='formLabel'>Name</label>
           <input
             className='formInputName'
@@ -211,6 +221,7 @@ function CreateListing() {
             minLength='10'
             required
           />
+
           <div className='formRooms flex'>
             <div>
               <label className='formLabel'>Bedrooms</label>
@@ -239,6 +250,7 @@ function CreateListing() {
               />
             </div>
           </div>
+
           <label className='formLabel'>Parking spot</label>
           <div className='formButtons'>
             <button
@@ -264,6 +276,7 @@ function CreateListing() {
               No
             </button>
           </div>
+
           <label className='formLabel'>Furnished</label>
           <div className='formButtons'>
             <button
@@ -289,6 +302,7 @@ function CreateListing() {
               No
             </button>
           </div>
+
           <label className='formLabel'>Address</label>
           <textarea
             className='formInputAddress'
@@ -298,6 +312,7 @@ function CreateListing() {
             onChange={onMutate}
             required
           />
+
           {!geolocationEnabled && (
             <div className='formLatLng flex'>
               <div>
@@ -324,6 +339,7 @@ function CreateListing() {
               </div>
             </div>
           )}
+
           <label className='formLabel'>Offer</label>
           <div className='formButtons'>
             <button
@@ -347,6 +363,7 @@ function CreateListing() {
               No
             </button>
           </div>
+
           <label className='formLabel'>Regular Price</label>
           <div className='formPriceDiv'>
             <input
@@ -361,11 +378,11 @@ function CreateListing() {
             />
             {type === 'rent' && <p className='formPriceText'>$ / Month</p>}
           </div>
+
           {offer && (
             <>
               <label className='formLabel'>Discounted Price</label>
-              <div className='formRow'>
-              <input 
+              <input
                 className='formInputSmall'
                 type='number'
                 id='discountedPrice'
@@ -375,10 +392,10 @@ function CreateListing() {
                 max='750000000'
                 required={offer}
               />
-              {type === 'rent' && <p className='formPriceText'>$ / Month</p>}
-              </div>
             </>
           )}
+
+
           <label className='formLabel'>Images</label>
           <p className='imagesInfo'>
             The first image will be the cover (max 6).
@@ -386,13 +403,14 @@ function CreateListing() {
           <input
             className='formInputFile'
             type='file'
-            id='imageUrls'
+            id='imageUrls' // Updated from 'images'
             onChange={onMutate}
             max='6'
             accept='.jpg,.png,.jpeg'
             multiple
             required
           />
+          <p className="uploadedCount">Uploaded {uploadedCount} image(s)</p>
           <button type='submit' className='primaryButton createListingButton'>
             Create Listing
           </button>

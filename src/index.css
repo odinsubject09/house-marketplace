@@ -8,6 +8,12 @@ body, html {
 button {
   cursor: pointer;
 }
+.uploadedCount {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+}
+
 .formRow {
   display: flex;
   align-items: center; /* Aligns items vertically centered */
