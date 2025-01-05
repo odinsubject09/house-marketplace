@@ -12,6 +12,7 @@
     "react-router-dom": "^7.1.1",
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.2",
+    "swiper": "^11.2.0",
     "uuid": "^11.0.3"
   },
   "scripts": {
