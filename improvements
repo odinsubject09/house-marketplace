@@ -1,3 +1,5 @@
 1.in sign up form add a loading gif since fetch api takes time
 2.also check if email id already exists when signing in
 3.add restriction to api keys
+4.add phone number also in signIn
+5.where we are sending message in contact page do something to connect it to wsapp

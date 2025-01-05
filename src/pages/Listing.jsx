@@ -22,6 +22,7 @@ function Listing() {
 
       if (docSnap.exists()) {
         setListing(docSnap.data())
+        console.log(listing)
         setLoading(false)
       }
     }
@@ -93,11 +94,12 @@ function Listing() {
                          
         {auth.currentUser?.uid !== listing.userRef /*check if the listing is not that of the user*/&& (
             <Link
-            to={`/contact/${listing.userRef}?listingName=${listing.name}&listingLocation=${listing.location}`}
+            to={`/contact/${listing.userRef}?listingName=${listing.name}`}
             className='primaryButton'
           >
             Contact Landlord
-          </Link>
+          </Link>)
+        }
        </div>
     </main>
   )
