@@ -50,7 +50,6 @@ function Listing() {
             disableOnInteraction: false, // Keeps autoplay active even after user interaction
           }}
         >
-        {console.log(listing.imgUrls)}
         {listing.imgUrls.map((url, index) => (
             
           <SwiperSlide key={index}>

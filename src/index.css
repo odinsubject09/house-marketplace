@@ -1,41 +1,3 @@
-/* Ensure body and html take full height */
-html, body {
-  height: 100%;
-}
-body, html {
-  overflow: auto;
-}
-button {
-  cursor: pointer;
-}
-.uploadedCount {
-  font-size: 14px;
-  color: #555;
-  margin-top: 10px;
-}
-
-.formRow {
-  display: flex;
-  align-items: center; /* Aligns items vertically centered */
-  gap: 10px; /* Adds space between input and text */
-}
-/* Remove default list styles */
-ul, ol {
-  list-style: none;
-}
-
-/* Remove default text decoration for links */
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* Set images and media to scale properly */
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap');
 * {
   box-sizing: border-box;
@@ -115,12 +77,6 @@ button {
   position: absolute;
   top: -3%;
   right: -2%;
-}
-.editIcon {
-  cursor: pointer;
-  position: absolute;
-  top: -3.4%;
-  right: 20px;
 }
 
 .pageContainer,
@@ -327,9 +283,11 @@ button {
 }
 
 .registerLink {
+  margin-top: 4rem;
   color: #00cc66;
   font-weight: 600;
   text-align: center;
+  margin-bottom: 3rem;
 }
 
 @media (min-width: 1217px) {
@@ -364,7 +322,7 @@ button {
 .swiperSlideDiv {
   position: relative;
   width: 100%;
-  height: 200px; /* Adjust as needed */
+  height: 100vh;
 }
 
 .swiperSlideImg {

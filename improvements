@@ -6,4 +6,4 @@
 
 6.for ease of user in the create listing form when they add their address and they want their lat and lng create a button 'get latitude and longitude'by connecting this to a url of a lat service provider where you directly fill the users adress and the user only has to copy the respective latitude and longitude
 doing this because google geocode api needs card details
-7.MAKE THE SLIDER AUTOPLAY see aur version's docof react slider
+7.MAKE THE SLIDER AUTOPLAY see aur version's doc of react slider(search how to use modules i.e autplay etc in our version of slider or react 18)
