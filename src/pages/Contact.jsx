@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'//searchParams used to extract param from formatted Url e.g:&deb&jyoti&paul
+import { useParams, useSearchParams } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase.config'
 import { toast } from 'react-toastify'
@@ -10,22 +10,35 @@ function Contact() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const params = useParams()
-  useEffect(()=>{
+  useEffect(() => {
     const getLandlord = async () => {
-        const docRef = doc(db, 'users', params.landlordId)
-        const docSnap = await getDoc(docRef)
-  
-        if (docSnap.exists()) {
-          setLandlord(docSnap.data())
-          console.log(landlord)
-        } else {
-          toast.error('Could not get landlord data')
-        }
+      const docRef = doc(db, 'users', params.landlordId)
+      const docSnap = await getDoc(docRef)
+
+      if (docSnap.exists()) {
+        setLandlord(docSnap.data())
+      } else {
+        toast.error('Could not get landlord data')
       }
-      getLandlord()
-  },[params.landlordId])
+    }
+    getLandlord()
+  }, [params.landlordId])
 
   const onChange = (e) => setMessage(e.target.value)
+
+  const handleWhatsAppClick = () => {
+    const formattedPhone = landlord.phone?.replace(/\D/g, '')
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
+      `${searchParams.get('listingName')}: ${message}`
+    )}`
+    window.open(whatsappUrl, '_blank')
+  }
+
+  const handleCallClick = () => {
+    const formattedPhone = landlord.phone?.replace(/\D/g, '')
+    window.location.href = `tel:${formattedPhone}`
+  }
+
   return (
     <div className='pageContainer'>
       <header>
@@ -51,20 +64,40 @@ function Contact() {
                 onChange={onChange}
               ></textarea>
             </div>
-            <a
-              href={`mailto:${landlord.email}?Subject=${searchParams.get(
-                'listingName'
-              )}&body=${message}`}
-            >
-              <button type='button' className='primaryButton'>
-                Send Message
-              </button>
-            </a>
+            <div className='flex flex-wrap gap-8'>
+              <a
+                href={`mailto:${landlord.email}?Subject=${searchParams.get(
+                  'listingName'
+                )}&body=${message}`}
+              >
+                <button type='button' className='primaryButton'>
+                  Send Email
+                </button>
+              </a>
+              {landlord.phone && (
+                <>
+                  <button
+                    type='button'
+                    onClick={handleWhatsAppClick}
+                    className='primaryButton'
+                  >
+                    Send WhatsApp
+                  </button>
+                  <button
+                    type='button'
+                    onClick={handleCallClick}
+                    className='primaryButton'
+                  >
+                    Call Now
+                  </button>
+                </>
+              )}
+            </div>
           </form>
         </main>
-        )
-        }
+      )}
     </div>
   )
 }
+
 export default Contact

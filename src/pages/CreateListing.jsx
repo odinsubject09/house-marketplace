@@ -337,6 +337,15 @@ function CreateListing() {
                   required
                 />
               </div>
+              <button type='button' className='secondaryButton formLabel formInputSmall'
+                onClick={() => {
+                const encodedAddress = encodeURIComponent(address);
+                const latLongUrl = `https://www.latlong.net/?place=${encodedAddress}`;
+                window.open(latLongUrl, '_blank');
+                }}
+              >
+                Get Latitude and Longitude
+              </button>
             </div>
           )}
 

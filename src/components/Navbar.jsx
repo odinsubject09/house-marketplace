@@ -13,7 +13,7 @@ function Navbar() {
   }
 
   return (
-    <footer className='navbar'>
+    <footer className='relative bottom-0 left-0 right-0 bg-white shadow-md'>
       <nav className='navbarNav'>
         <ul className='navbarListItems'>
           <li className='navbarListItem' onClick={()=>navigate('/')}>

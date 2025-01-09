@@ -18,8 +18,9 @@ function SignUp() {
     name: '',
     email: '',
     password: '',
+    phone: '', // Added phone field
   })
-  const { name, email, password } = formData
+  const { name, email, password, phone } = formData // Destructured phone
 
   const navigate = useNavigate()
 
@@ -64,7 +65,7 @@ function SignUp() {
     <>
       <div className='pageContainer'>
         <header>
-          <p className='pageHeader'>Welcome Back!</p>
+          <p className='pageHeader'>Welcome!</p>
         </header>
 
         <form onSubmit={onSubmit}>
@@ -82,6 +83,14 @@ function SignUp() {
             placeholder='Email'
             id='email'
             value={email}
+            onChange={onChange}
+          />
+          <input
+            type='tel'
+            className='emailInput'
+            placeholder='Phone Number'
+            id='phone'
+            value={phone}
             onChange={onChange}
           />
 
