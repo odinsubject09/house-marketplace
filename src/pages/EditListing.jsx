@@ -6,17 +6,19 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from 'firebase/storage'
-import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, updateDoc, getDoc, serverTimestamp ,addDoc,collection} from 'firebase/firestore'
 import { db } from '../firebase.config'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { v4 as uuidv4 } from 'uuid'
 import Spinner from '../components/Spinner'
+import { storage } from '../firebase.config'
 
 function EditListing() {
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true)
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [listing, setListing] = useState(false)
+  const [uploadedCount, setUploadedCount] = useState(0);
   const [formData, setFormData] = useState({
     type: 'rent',
     name: '',
@@ -28,7 +30,7 @@ function EditListing() {
     offer: false,
     regularPrice: 0,
     discountedPrice: 0,
-    images: {},
+    imageUrls: [], // Changed from 'images' to 'imageUrls'
     latitude: 0,
     longitude: 0,
   })
@@ -44,10 +46,11 @@ function EditListing() {
     offer,
     regularPrice,
     discountedPrice,
-    images,
+    imageUrls, // Updated field
     latitude,
     longitude,
   } = formData
+
 
   const auth = getAuth()
   const navigate = useNavigate()
@@ -101,117 +104,117 @@ function EditListing() {
 
   const onSubmit = async (e) => {
     e.preventDefault()
-
-    setLoading(true)
-
-    if (discountedPrice >= regularPrice) {
-      setLoading(false)
-      toast.error('Discounted price needs to be less than regular price')
-      return
-    }
-
-    if (images.length > 6) {
-      setLoading(false)
-      toast.error('Max 6 images')
-      return
-    }
-
-    let geolocation = {}
-    let location
-
-    if (geolocationEnabled) {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`
-      )
-
-      const data = await response.json()
-
-      geolocation.lat = data.results[0]?.geometry.location.lat ?? 0
-      geolocation.lng = data.results[0]?.geometry.location.lng ?? 0
-
-      location =
-        data.status === 'ZERO_RESULTS'
-          ? undefined
-          : data.results[0]?.formatted_address
-
-      if (location === undefined || location.includes('undefined')) {
+    
+    try {
+      setLoading(true)
+  
+      // Validation checks
+      if (discountedPrice >= regularPrice) {
         setLoading(false)
-        toast.error('Please enter a correct address')
+        toast.error('Discounted price needs to be less than regular price')
         return
       }
-    } else {
-      geolocation.lat = latitude
-      geolocation.lng = longitude
-    }
-
-    // Store image in firebase
-    const storeImage = async (image) => {
-      return new Promise((resolve, reject) => {
-        const storage = getStorage()
-        const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
-
-        const storageRef = ref(storage, 'images/' + fileName)
-
-        const uploadTask = uploadBytesResumable(storageRef, image)
-
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress =
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            console.log('Upload is ' + progress + '% done')
-            switch (snapshot.state) {
-              case 'paused':
-                console.log('Upload is paused')
-                break
-              case 'running':
-                console.log('Upload is running')
-                break
+  
+      if (imageUrls.length > 6) {
+        setLoading(false)
+        toast.error('Max 6 images')
+        return
+      }
+  
+      if (!imageUrls.length) {
+        setLoading(false)
+        toast.error('Please upload at least one image')
+        return
+      }
+  
+      // Handle geolocation
+      let geolocation = {}
+      let location
+  
+      if (geolocationEnabled) {
+        // Add your geolocation logic here if needed
+      } else {
+        geolocation.lat = latitude
+        geolocation.lng = longitude
+        location = address
+      }
+  
+      // Store images in Firebase
+      const storeImage = async (image) => {
+        console.log('Current user:', auth.currentUser?.uid)
+        console.log('Image type:', image.type)
+        console.log('Image size:', image.size / (1024 * 1024), 'MB')
+        console.log('Uploading image:', image);
+        const fileName = `${auth.currentUser?.uid}-${image.name}-${uuidv4()}`;
+        console.log('Generated file name:', fileName);
+      
+        const storageRef = ref(storage, 'imageUrls/' + fileName);
+        console.log('Storage reference:', storageRef);
+      
+        return new Promise((resolve, reject) => {
+          const uploadTask = uploadBytesResumable(storageRef, image);
+      
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              console.log('Upload progress:', snapshot.bytesTransferred / snapshot.totalBytes);
+            },
+            (error) => {
+              console.error('Upload error:', error);
+              reject(error);
+            },
+            async () => {
+              try {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                console.log('Download URL:', downloadURL);
+                resolve(downloadURL);
+              } catch (error) {
+                console.error('Error getting download URL:', error);
+                reject(error);
+              }
             }
-          },
-          (error) => {
-            reject(error)
-          },
-          () => {
-            // Handle successful uploads on complete
-            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              resolve(downloadURL)
-            })
-          }
-        )
-      })
-    }
-
-    const imgUrls = await Promise.all(
-      [...images].map((image) => storeImage(image))
-    ).catch(() => {
+          );
+        });
+      };
+        
+      // Upload all images and get their URLs
+      const imgUrls = await Promise.all(
+        Array.from(imageUrls).map((image) => storeImage(image))
+      )
+  
+      if (!imgUrls || imgUrls.length === 0) {
+        throw new Error('Failed to upload images')
+      }
+  
+      // Prepare the listing data
+      const formDataCopy = {
+        ...formData,
+        imgUrls,
+        geolocation,
+        timestamp: serverTimestamp(),
+      }
+  
+      // Clean up the form data
+      delete formDataCopy.imageUrls
+      delete formDataCopy.address
+      
+      if (location) formDataCopy.location = location
+      if (!formDataCopy.offer) delete formDataCopy.discountedPrice
+  
+      // Save to Firestore
+      const docRef = doc(db, 'listings', params.listingId)
+      await updateDoc(docRef, formDataCopy)
       setLoading(false)
-      toast.error('Images not uploaded')
-      return
-    })
-
-    const formDataCopy = {
-      ...formData,
-      imgUrls,
-      geolocation,
-      timestamp: serverTimestamp(),
+      toast.success('Listing saved')
+      navigate(`/category/${formDataCopy.type}/${docRef.id}`)
+  
+    } catch (error) {
+      console.error('Submission error:', error)
+      setLoading(false)
+      toast.error('Error creating listing: ' + error.message)
     }
-
-    formDataCopy.location = address
-    delete formDataCopy.images
-    delete formDataCopy.address
-    !formDataCopy.offer && delete formDataCopy.discountedPrice
-
-    // Update listing
-    const docRef = doc(db, 'listings', params.listingId)
-    await updateDoc(docRef, formDataCopy)
-    setLoading(false)
-    toast.success('Listing saved')
-    navigate(`/category/${formDataCopy.type}/${docRef.id}`)
   }
-
-  const onMutate = (e) => {
+    const onMutate = (e) => {
     let boolean = null
 
     if (e.target.value === 'true') {
@@ -223,10 +226,13 @@ function EditListing() {
 
     // Files
     if (e.target.files) {
+      // Convert FileList to an array
+      const newFiles = [...e.target.files];
       setFormData((prevState) => ({
         ...prevState,
-        images: e.target.files,
-      }))
+        imageUrls: [...(prevState.imageUrls || []), ...newFiles],// Assign a true array
+      }));
+      setUploadedCount((prevCount) => prevCount + newFiles.length);
     }
 
     // Text/Booleans/Numbers
@@ -458,19 +464,17 @@ function EditListing() {
           )}
 
           <label className='formLabel'>Images</label>
-          <p className='imagesInfo'>
-            The first image will be the cover (max 6).
-          </p>
           <input
             className='formInputFile'
             type='file'
-            id='images'
+            id='imageUrls' // Updated from 'images'
             onChange={onMutate}
             max='6'
             accept='.jpg,.png,.jpeg'
             multiple
             required
           />
+          <p className="uploadedCount">Uploaded {uploadedCount} image(s)</p>
           <button type='submit' className='primaryButton createListingButton'>
             Edit Listing
           </button>

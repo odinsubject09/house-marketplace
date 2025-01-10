@@ -7,12 +7,13 @@ import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import Spinner from '../components/Spinner'
 import shareIcon from '../assets/svg/shareIcon.svg'
 
+
+
+
+// Import Swiper styles
 import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css'; // Core Swiper styles
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
-import 'swiper/css/autoplay';
-import { Autoplay, Navigation, Pagination } from 'swiper'; // Correct way to import Swiper modules
+import { Navigation, Pagination, Scrollbar, Autoplay } from 'swiper'; // Import required modules
+import 'swiper/swiper-bundle.css'; // Import Swiper styles
 
 function Listing() {
   const [listing, setListing] = useState(null)
@@ -44,26 +45,31 @@ function Listing() {
 
   return (
     <main>
-        <Swiper slidesPerView={1} pagination={{ clickable: true }} 
-        autoplay={{
-            delay: 3000, // Time in milliseconds before sliding to the next image
-            disableOnInteraction: false, // Keeps autoplay active even after user interaction
-          }}
-        >
-        {listing.imgUrls.map((url, index) => (
+    <Swiper
+      modules={[Autoplay, Navigation, Pagination, Scrollbar]} // Pass modules here
+      slidesPerView={1}
+      navigation={true}
+      pagination={{ clickable: true }}
+      scrollbar={{ draggable: true }}
+      autoplay={{
+        delay: 3000,
+        disableOnInteraction: false,
+      }}
+    >
+      {listing.imgUrls.map((url, index) => (
             
-          <SwiperSlide key={index}>
-            <div
-              style={{
-                background: `url(${listing.imgUrls[index]}) center no-repeat`,
-                backgroundSize: 'cover',
-              }}
-              className='swiperSlideDiv'
-            ></div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-        <div
+            <SwiperSlide key={index}>
+              <div className="swiperSlideDiv">
+    <img
+      src={listing.imgUrls[index]}
+      alt={`Slide ${index}`}
+      className="swiperSlideImg"
+    />
+  </div>
+            </SwiperSlide>
+      ))}    
+      </Swiper>      
+    <div
         className='shareIconDiv'
         onClick={() => {
           navigator.clipboard.writeText(window.location.href)//copies URL to clipboard

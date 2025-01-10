@@ -1,7 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap');
-* {
-  box-sizing: border-box;
-}
 
 html::-webkit-scrollbar {
   display: none;
@@ -50,7 +47,11 @@ button {
     padding: 0 5rem;
   }
 }
-
+.editIcon{
+  cursor: pointer;
+  position: absolute;
+  right: 1%;
+}
 .textarea {
   padding: 1rem 1.5rem;
   height: 300px;
@@ -76,9 +77,11 @@ button {
   cursor: pointer;
   position: absolute;
   top: -3%;
-  right: -2%;
+  right: 1%;
 }
-
+ul.listingsList {
+  padding-left: 0px;
+}
 .pageContainer,
 .offers,
 .profile,
@@ -322,14 +325,13 @@ button {
 .swiperSlideDiv {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100%;
 }
 
 .swiperSlideImg {
   width: 100%;
   object-fit: cover;
 }
-
 .swiperSlideText {
   color: #ffffff;
   position: absolute;
@@ -400,10 +402,12 @@ button {
   align-items: center;
   margin-bottom: 1rem;
   position: relative;
+  margin-left: 0%;
 }
 
 .categoryListingLink {
   display: contents;
+  margin-left: 0%;
 }
 
 .categoryListingImg {
@@ -411,6 +415,8 @@ button {
   height: 100px;
   border-radius: 1.5rem;
   object-fit: cover;
+  padding-right:5px;
+  margin-left: 0%;
 }
 @media (min-width: 1024px) {
   .categoryListingImg {
@@ -418,7 +424,10 @@ button {
     height: 217px;
   }
 }
-
+.lisitingsList
+{
+  padding-left: 0%;
+}
 .categoryListingDetails {
   width: 65%;
 }
