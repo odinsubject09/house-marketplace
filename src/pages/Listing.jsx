@@ -84,14 +84,17 @@ function Listing() {
       {shareLinkCopied && <p className='linkCopied'>Link Copied!</p>}
       <div className='listingDetails'>
         <p className='listingName'>
-          {listing.name} - $
-          {listing.offer
-            ? listing.discountedPrice
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ',')//for commas in number
-            : listing.regularPrice
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+          {listing.name}  &#x20b9;
+          <span>
+  {listing.offer
+    ? listing.discountedPrice
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    : listing.regularPrice
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+  {listing.type === 'rent' && ' / Month'}
+</span>
         </p>
 
         <p className='listingLocation'>{listing.location}</p>
@@ -102,26 +105,27 @@ function Listing() {
         {/*if offer present then show discount*/}
         {listing.offer && (
           <p className='discountPrice'>
-            ${listing.regularPrice - listing.discountedPrice} discount
+            &#x20b9;{listing.regularPrice - listing.discountedPrice} discount
           </p>
         )}
-
+        {listing.brand && (
+          <p className='discountPrice'>
+            Cycle Brand:{listing.brand}
+          </p>
+        )}
         <ul className='listingDetailsList'>
           <li>
-            {listing.bedrooms > 1
-              ? `${listing.bedrooms} Bedrooms`
-              : '1 Bedroom'}
-          </li>
-          <li>
-            {listing.bathrooms > 1
-              ? `${listing.bathrooms} Bathrooms`
-              : '1 Bathroom'}
+            {listing.old > 1
+              ? `${listing.old} months old`
+              : '1 month old'}
           </li>
           <li>{listing.parking && 'Parking Spot'}</li>
-          <li>{listing.furnished && 'Furnished'}</li>
+          <li>
+            {listing.gear?'Gear Cycle':'Non Gear'}
+          </li>
         </ul>
         
-        <p className='listingLocationTitle'>Location</p>
+        <p className='listingLocationTitle'>Parking Spot</p>
 
         <div className='leafletContainer'>
           <MapContainer

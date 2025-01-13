@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import ListingItem from '../components/ListingItem'
 import arrowRight from '../assets/svg/keyboardArrowRightIcon.svg'
-import homeIcon from '../assets/svg/homeIcon.svg'
+import bikeIcon from '../assets/svg/bicycle-solid.svg'
 
 function Profile() {
   const auth = getAuth()
@@ -195,8 +195,8 @@ function Profile() {
           </form>
         </div>
         <Link to='/create-listing' className='createListing'>
-          <img src={homeIcon} alt='home' />
-          <p>Sell or rent your home</p>
+          <img src={bikeIcon} alt='home' style={{ width: '50px', height: '50px' }} />
+          <p>Sell or rent your bike</p>
           <img src={arrowRight} alt='arrow right' />
         </Link>
         {!loading && listings?.length > 0 && (

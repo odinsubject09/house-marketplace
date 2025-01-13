@@ -21,11 +21,11 @@ function EditListing() {
   const [uploadedCount, setUploadedCount] = useState(0);
   const [formData, setFormData] = useState({
     type: 'rent',
-    name: '',
-    bedrooms: 1,
-    bathrooms: 1,
+    description: '',
+    old: 1,
+    brand: '',
     parking: false,
-    furnished: false,
+    gear: false,
     address: '',
     offer: false,
     regularPrice: 0,
@@ -37,11 +37,11 @@ function EditListing() {
 
   const {
     type,
-    name,
-    bedrooms,
-    bathrooms,
+    description,
+    old,
+    brand,
     parking,
-    furnished,
+    gear,
     address,
     offer,
     regularPrice,
@@ -50,8 +50,6 @@ function EditListing() {
     latitude,
     longitude,
   } = formData
-
-
   const auth = getAuth()
   const navigate = useNavigate()
   const params = useParams()
@@ -104,117 +102,84 @@ function EditListing() {
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    
-    try {
-      setLoading(true)
-  
-      // Validation checks
-      if (discountedPrice >= regularPrice) {
-        setLoading(false)
-        toast.error('Discounted price needs to be less than regular price')
-        return
-      }
-  
-      if (imageUrls.length > 6) {
-        setLoading(false)
-        toast.error('Max 6 images')
-        return
-      }
-  
-      if (!imageUrls.length) {
-        setLoading(false)
-        toast.error('Please upload at least one image')
-        return
-      }
-  
-      // Handle geolocation
-      let geolocation = {}
-      let location
-  
-      if (geolocationEnabled) {
-        // Add your geolocation logic here if needed
-      } else {
-        geolocation.lat = latitude
-        geolocation.lng = longitude
-        location = address
-      }
-  
-      // Store images in Firebase
-      const storeImage = async (image) => {
-        console.log('Current user:', auth.currentUser?.uid)
-        console.log('Image type:', image.type)
-        console.log('Image size:', image.size / (1024 * 1024), 'MB')
-        console.log('Uploading image:', image);
-        const fileName = `${auth.currentUser?.uid}-${image.name}-${uuidv4()}`;
-        console.log('Generated file name:', fileName);
-      
-        const storageRef = ref(storage, 'imageUrls/' + fileName);
-        console.log('Storage reference:', storageRef);
-      
-        return new Promise((resolve, reject) => {
-          const uploadTask = uploadBytesResumable(storageRef, image);
-      
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-              console.log('Upload progress:', snapshot.bytesTransferred / snapshot.totalBytes);
-            },
-            (error) => {
-              console.error('Upload error:', error);
-              reject(error);
-            },
-            async () => {
-              try {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                console.log('Download URL:', downloadURL);
-                resolve(downloadURL);
-              } catch (error) {
-                console.error('Error getting download URL:', error);
-                reject(error);
-              }
-            }
-          );
-        });
-      };
-        
-      // Upload all images and get their URLs
-      const imgUrls = await Promise.all(
-        Array.from(imageUrls).map((image) => storeImage(image))
-      )
-  
-      if (!imgUrls || imgUrls.length === 0) {
-        throw new Error('Failed to upload images')
-      }
-  
-      // Prepare the listing data
-      const formDataCopy = {
-        ...formData,
-        imgUrls,
-        geolocation,
-        timestamp: serverTimestamp(),
-      }
-  
-      // Clean up the form data
-      delete formDataCopy.imageUrls
-      delete formDataCopy.address
-      
-      if (location) formDataCopy.location = location
-      if (!formDataCopy.offer) delete formDataCopy.discountedPrice
-  
-      // Save to Firestore
-      const docRef = doc(db, 'listings', params.listingId)
-      await updateDoc(docRef, formDataCopy)
+
+    setLoading(true)
+
+    if (discountedPrice >= regularPrice) {
       setLoading(false)
-      toast.success('Listing saved')
-      navigate(`/category/${formDataCopy.type}/${docRef.id}`)
-  
-    } catch (error) {
-      console.error('Submission error:', error)
-      setLoading(false)
-      toast.error('Error creating listing: ' + error.message)
+      toast.error('Discounted price needs to be less than regular price')
+      return
     }
-  }
-    const onMutate = (e) => {
+
+    if (imageUrls.length > 6) { // Updated from 'images' to 'imageUrls'
+      setLoading(false)
+      toast.error('Max 6 images')
+      return
+    }
+
+    let geolocation = {}
+    let location
+
+    if (geolocationEnabled) {
+      
+    } else {
+      geolocation.lat = latitude
+      geolocation.lng = longitude
+      location = address
+    }
+
+    // Store image in firebase
+    const storeImage = async (image) => {
+    
+      const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
+
+      const storageRef = ref(storage, 'imageUrls/' + fileName)
+
+      return new Promise((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(storageRef, image)
+
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {},
+          (error) => {
+            reject(error)
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+            resolve(downloadURL)
+          }
+        )
+      })
+    }
+
+    const imgUrls = await Promise.all(
+      [...imageUrls].map((image) => storeImage(image)) // Updated from 'images' to 'imageUrls'
+    ).catch(() => {
+      setLoading(false)
+      toast.error('Images not uploaded')
+      return
+    })
+
+    const formDataCopy = {
+      ...formData,
+      imgUrls,
+      geolocation,
+      timestamp: serverTimestamp(),
+    }
+    setLoading(false)
+    delete formDataCopy.imageUrls // Updated from 'images'
+    delete formDataCopy.address
+    location && (formDataCopy.location = location)
+    !formDataCopy.offer && delete formDataCopy.discountedPrice
+    console.log(formDataCopy)
+
+    const docRef = doc(db, 'listings', params.listingId)
+    await updateDoc(docRef, formDataCopy)
+    setLoading(false)
+    toast.success('Listing saved')
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`)  }
+
+  const onMutate = (e) => {
     let boolean = null
 
     if (e.target.value === 'true') {
@@ -251,12 +216,12 @@ function EditListing() {
   return (
     <div className='profile'>
       <header>
-        <p className='pageHeader'>Edit Listing</p>
+        <p className='pageHeader'>Create a Listing</p>
       </header>
 
       <main>
         <form onSubmit={onSubmit}>
-          <label className='formLabel'>Sell / Rent</label>
+        <label className='formLabel'>Sell / Rent</label>
           <div className='formButtons'>
             <button
               type='button'
@@ -278,12 +243,12 @@ function EditListing() {
             </button>
           </div>
 
-          <label className='formLabel'>Name</label>
+          <label className='formLabel'>Brief Description</label>
           <input
             className='formInputName'
             type='text'
-            id='name'
-            value={name}
+            id='description'
+            value={description}
             onChange={onMutate}
             maxLength='32'
             minLength='10'
@@ -292,12 +257,12 @@ function EditListing() {
 
           <div className='formRooms flex'>
             <div>
-              <label className='formLabel'>Bedrooms</label>
+              <label className='formLabel'>Old(in months)</label>
               <input
                 className='formInputSmall'
                 type='number'
-                id='bedrooms'
-                value={bedrooms}
+                id='old'
+                value={old}
                 onChange={onMutate}
                 min='1'
                 max='50'
@@ -305,18 +270,19 @@ function EditListing() {
               />
             </div>
             <div>
-              <label className='formLabel'>Bathrooms</label>
-              <input
-                className='formInputSmall'
-                type='number'
-                id='bathrooms'
-                value={bathrooms}
-                onChange={onMutate}
-                min='1'
-                max='50'
-                required
-              />
+            <label className='formLabel'>{'\t'}&nbsp;&nbsp;&nbsp;Brand</label>
+          <input
+            className='formInputName'
+            type='text'
+            id='brand'
+            value={brand}
+            onChange={onMutate}
+            maxLength='32'
+            minLength='3'
+            required
+          />
             </div>
+
           </div>
 
           <label className='formLabel'>Parking spot</label>
@@ -345,12 +311,12 @@ function EditListing() {
             </button>
           </div>
 
-          <label className='formLabel'>Furnished</label>
+          <label className='formLabel'>Gear</label>
           <div className='formButtons'>
             <button
-              className={furnished ? 'formButtonActive' : 'formButton'}
+              className={gear ? 'formButtonActive' : 'formButton'}
               type='button'
-              id='furnished'
+              id='gear'
               value={true}
               onClick={onMutate}
             >
@@ -358,12 +324,12 @@ function EditListing() {
             </button>
             <button
               className={
-                !furnished && furnished !== null
+                !gear && gear !== null
                   ? 'formButtonActive'
                   : 'formButton'
               }
               type='button'
-              id='furnished'
+              id='gear'
               value={false}
               onClick={onMutate}
             >
@@ -405,6 +371,15 @@ function EditListing() {
                   required
                 />
               </div>
+              <button type='button' className='secondaryButton formLabel formInputSmall'
+                onClick={() => {
+                const encodedAddress = encodeURIComponent(address);
+                const latLongUrl = `https://www.latlong.net/?place=${encodedAddress}`;
+                window.open(latLongUrl, '_blank');
+                }}
+              >
+                Get Latitude and Longitude
+              </button>
             </div>
           )}
 
@@ -444,7 +419,7 @@ function EditListing() {
               max='750000000'
               required
             />
-            {type === 'rent' && <p className='formPriceText'>$ / Month</p>}
+            {type === 'rent' && <p className='formPriceText'>&#x20b9; / Month</p>}
           </div>
 
           {offer && (
@@ -463,7 +438,11 @@ function EditListing() {
             </>
           )}
 
+
           <label className='formLabel'>Images</label>
+          <p className='imagesInfo'>
+            The first image will be the cover (max 6).
+          </p>
           <input
             className='formInputFile'
             type='file'
@@ -476,7 +455,7 @@ function EditListing() {
           />
           <p className="uploadedCount">Uploaded {uploadedCount} image(s)</p>
           <button type='submit' className='primaryButton createListingButton'>
-            Edit Listing
+            Create Listing
           </button>
         </form>
       </main>

@@ -14,11 +14,11 @@ function CreateListing() {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     type: 'rent',
-    name: '',
-    bedrooms: 1,
-    bathrooms: 1,
+    description: '',
+    old: 1,
+    brand: '',
     parking: false,
-    furnished: false,
+    gear: false,
     address: '',
     offer: false,
     regularPrice: 0,
@@ -30,11 +30,11 @@ function CreateListing() {
 
   const {
     type,
-    name,
-    bedrooms,
-    bathrooms,
+    description,
+    old,
+    brand,
     parking,
-    furnished,
+    gear,
     address,
     offer,
     regularPrice,
@@ -72,7 +72,8 @@ function CreateListing() {
 
     setLoading(true)
 
-    if (discountedPrice >= regularPrice) {
+    if (+discountedPrice >= +regularPrice) {
+      console.log(discountedPrice+' '+regularPrice)
       setLoading(false)
       toast.error('Discounted price needs to be less than regular price')
       return
@@ -133,7 +134,6 @@ function CreateListing() {
       geolocation,
       timestamp: serverTimestamp(),
     }
-    console.log(imgUrls)
     setLoading(false)
     delete formDataCopy.imageUrls // Updated from 'images'
     delete formDataCopy.address
@@ -210,12 +210,12 @@ function CreateListing() {
             </button>
           </div>
 
-          <label className='formLabel'>Name</label>
+          <label className='formLabel'>Brief Description</label>
           <input
             className='formInputName'
             type='text'
-            id='name'
-            value={name}
+            id='description'
+            value={description}
             onChange={onMutate}
             maxLength='32'
             minLength='10'
@@ -224,12 +224,12 @@ function CreateListing() {
 
           <div className='formRooms flex'>
             <div>
-              <label className='formLabel'>Bedrooms</label>
+              <label className='formLabel'>Old(in months)</label>
               <input
                 className='formInputSmall'
                 type='number'
-                id='bedrooms'
-                value={bedrooms}
+                id='old'
+                value={old}
                 onChange={onMutate}
                 min='1'
                 max='50'
@@ -237,18 +237,19 @@ function CreateListing() {
               />
             </div>
             <div>
-              <label className='formLabel'>Bathrooms</label>
-              <input
-                className='formInputSmall'
-                type='number'
-                id='bathrooms'
-                value={bathrooms}
-                onChange={onMutate}
-                min='1'
-                max='50'
-                required
-              />
+            <label className='formLabel'>{'\t'}&nbsp;&nbsp;&nbsp;Brand</label>
+          <input
+            className='formInputName'
+            type='text'
+            id='brand'
+            value={brand}
+            onChange={onMutate}
+            maxLength='32'
+            minLength='3'
+            required
+          />
             </div>
+
           </div>
 
           <label className='formLabel'>Parking spot</label>
@@ -277,12 +278,12 @@ function CreateListing() {
             </button>
           </div>
 
-          <label className='formLabel'>Furnished</label>
+          <label className='formLabel'>Gear</label>
           <div className='formButtons'>
             <button
-              className={furnished ? 'formButtonActive' : 'formButton'}
+              className={gear ? 'formButtonActive' : 'formButton'}
               type='button'
-              id='furnished'
+              id='gear'
               value={true}
               onClick={onMutate}
             >
@@ -290,12 +291,12 @@ function CreateListing() {
             </button>
             <button
               className={
-                !furnished && furnished !== null
+                !gear && gear !== null
                   ? 'formButtonActive'
                   : 'formButton'
               }
               type='button'
-              id='furnished'
+              id='gear'
               value={false}
               onClick={onMutate}
             >
@@ -385,7 +386,7 @@ function CreateListing() {
               max='750000000'
               required
             />
-            {type === 'rent' && <p className='formPriceText'>$ / Month</p>}
+            {type === 'rent' && <p className='formPriceText'>&#x20b9; / Month</p>}
           </div>
 
           {offer && (
@@ -397,7 +398,6 @@ function CreateListing() {
                 id='discountedPrice'
                 value={discountedPrice}
                 onChange={onMutate}
-                min='50'
                 max='750000000'
                 required={offer}
               />

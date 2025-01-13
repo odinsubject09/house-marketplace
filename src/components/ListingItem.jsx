@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ReactComponent as DeleteIcon } from '../assets/svg/deleteIcon.svg'
-import bedIcon from '../assets/svg/bedIcon.svg'
-import bathtubIcon from '../assets/svg/bathtubIcon.svg'
+import cycleIcon from '../assets/svg/bicycle-solid.svg'
+import gearIcon from '../assets/svg/gears-solid.svg'
 import { ReactComponent as EditIcon } from '../assets/svg/editIcon.svg'
 
 function ListingItem({listing,id,onEdit,onDelete}) {
@@ -18,9 +18,9 @@ function ListingItem({listing,id,onEdit,onDelete}) {
             />
             <div className='categoryListingDetails'>
                 <p className='categoryListingLocation'>{listing.location}</p>
-                <p className='categoryListingName'>{listing.name}</p>
+                <p className='categoryListingName'>{listing.description}</p>
                 <p className='categoryListingPrice'>
-                ${listing.offer? //check if offer present
+                &#x20b9;{listing.offer? //check if offer present
                    listing.discountedPrice
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ',')//for commas
@@ -30,16 +30,16 @@ function ListingItem({listing,id,onEdit,onDelete}) {
                   {listing.type === 'rent' && ' / Month'} 
                 </p>
                 <div className='categoryListingInfoDiv'>
-                    <img src={bedIcon} alt='bed' />
+                    <img src={cycleIcon} style={{ width: '40px', height: '40px' }} alt='old' />
                     <p className='categoryListingInfoText'>
-                        {listing.bedrooms > 1 ? `${listing.bedrooms} Bedrooms`
-                        : '1 Bedroom'}
+                        {listing.old > 1 ? `${listing.old} months old`
+                        : '1 month old'}
                     </p>
-                    <img src={bathtubIcon} alt='bath' />
+                    <img src={gearIcon} style={{ width: '40px', height: '40px' }} alt='gear' />
                     <p className='categoryListingInfoText'>
-                        {listing.bathrooms > 1
-                        ? `${listing.bathrooms} Bathrooms`
-                        : '1 Bathroom'}
+                        {listing.gear
+                        ? `Gear cycle`
+                        : 'Non Gear'}
                     </p>
                 </div>
             </div>

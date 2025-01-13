@@ -4,10 +4,8 @@ import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 import { db } from '../firebase.config'
 
 import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css'; // Core Swiper styles
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
-import 'swiper/css/autoplay';
+import { Navigation, Pagination, Scrollbar, Autoplay } from 'swiper'; // Import required modules
+import 'swiper/swiper-bundle.css'; // Import Swiper styles
 import Spinner from './Spinner';
 function Slider() {
   const [loading, setLoading] = useState(true)
@@ -46,22 +44,29 @@ function Slider() {
       <>
           <p className='exploreHeading'>Recommended</p>
 
-          <Swiper slidesPerView={1} pagination={{ clickable: true }}>
+          <Swiper modules={[Autoplay, Navigation, Pagination, Scrollbar]}
+          slidesPerView={1} 
+          pagination={{ clickable: true }}
+          autoplay={{
+        delay: 3000,
+        disableOnInteraction: false,
+      }}>
             {listings.map(({data,id})=>(
               <SwiperSlide
               key={id}
               onClick={() => navigate(`/category/${data.type}/${id}`)}
               >
                 <div
-                style={{
-                  background: `url(${data.imgUrls[0]}) center no-repeat`,
-                  backgroundSize: 'cover',
-                }}
                 className='swiperSlideDiv'
               >
+                <img
+      src={data.imgUrls[0]}
+      alt={`Slide show}`}
+      className="swiperSlideImg"
+    />
                 <p className='swiperSlideText'>{data.name}</p>
                 <p className='swiperSlidePrice'>
-                  ${data.discountedPrice ?? data.regularPrice}{' '}
+                &#x20b9;{data.discountedPrice ?? data.regularPrice}{' '}
                   {data.type === 'rent' && '/ month'}
                 </p>
               </div>
