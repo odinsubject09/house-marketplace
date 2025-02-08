@@ -39,6 +39,14 @@ function Contact() {
     window.location.href = `tel:${formattedPhone}`
   }
 
+  const handleChatRoom = () => {
+    if (landlord?.name) {
+      const roomName = landlord.name.toLowerCase().replace(/\s+/g, '-')
+      window.open(`http://localhost:8000/${roomName}`, '_blank')
+    } else {
+      toast.error('Could not join chat room - landlord name not available')
+    }
+  }
   return (
     <div className='pageContainer'>
       <header>
@@ -47,6 +55,15 @@ function Contact() {
 
       {landlord !== null && (
         <main>
+          <div>
+          <button
+                    type='button'
+                    onClick={handleChatRoom}
+                    className='primaryButton'
+          >
+                    Join {landlord?.name}'s Chat Room
+          </button>
+          </div>
           <div className='contactLandlord'>
             <p className='landlordName'>Contact {landlord?.name}</p>
           </div>
