@@ -29,7 +29,7 @@ function Profile() {
     const userDocSnap = await getDoc(userDocRef);
     const userData = userDocSnap.data();
     return (userData.phone)
-  })
+  },[auth.currentUser.uid])
   
   const [formData, setFormData] = useState({
     name: auth.currentUser.displayName,
