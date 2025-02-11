@@ -77,7 +77,7 @@ const fetchListings = async () => {
 
 useEffect(() => {
     fetchListings()
-}, [params.categoryName, sortBy, sortOrder])
+}, [params.categoryName, sortBy, sortOrder,fetchListings])
 
 const onFetchMoreListings = async () => {
     try {

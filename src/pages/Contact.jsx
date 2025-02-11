@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 function Contact() {
   const [message, setMessage] = useState('')
   const [landlord, setLandlord] = useState(null)
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
 
   const params = useParams()
   useEffect(() => {

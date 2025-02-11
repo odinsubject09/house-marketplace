@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import {
-  getStorage,
   ref,
   uploadBytesResumable,
   getDownloadURL,
 } from 'firebase/storage'
-import { doc, updateDoc, getDoc, serverTimestamp ,addDoc,collection} from 'firebase/firestore'
+import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase.config'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -15,7 +14,7 @@ import Spinner from '../components/Spinner'
 import { storage } from '../firebase.config'
 
 function EditListing() {
-  const [geolocationEnabled, setGeolocationEnabled] = useState(false)
+  const [geolocationEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [listing, setListing] = useState(false)
   const [uploadedCount, setUploadedCount] = useState(0);

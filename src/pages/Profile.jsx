@@ -49,7 +49,7 @@ function Profile() {
     };
 
     fetchPhoneNumber();
-  }, []);
+  }, [getPhoneNumber]);
 
   const [loading, setLoading] = useState(true)
   const [listings, setListings] = useState(null)

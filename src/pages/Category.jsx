@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   collection,
@@ -17,37 +17,16 @@ import ListingItem from '../components/ListingItem'
 function Category() {
     const [listings, setListings] = useState(null)
     const [loading, setLoading] = useState(true)
-    const [sortBy, setSortBy] = useState('timestamp') // Add sort state
-    const [sortOrder, setSortOrder] = useState('desc') // Add sort order state
+    const [sortBy, setSortBy] = useState('timestamp')
+    const [sortOrder, setSortOrder] = useState('desc')
     const params = useParams()
     const [lastFetchedListing, setLastFetchedListing] = useState(null)
 
-    // Function to handle sort change
-    const handleSortChange = (e) => {
-        const value = e.target.value
-        if (value === 'newest') {
-            setSortBy('timestamp')
-            setSortOrder('desc')
-        } else if (value === 'oldest') {
-            setSortBy('timestamp')
-            setSortOrder('asc')
-        } else if (value === 'price-asc') {
-            setSortBy('regularPrice')
-            setSortOrder('asc')
-        } else if (value === 'price-desc') {
-            setSortBy('regularPrice')
-            setSortOrder('desc')
-        }
-        
-        // Refetch listings with new sort
-        fetchListings()
-    }
-
-    const fetchListings = async () => {
+    const fetchListings = useCallback(async () => {
         try {
             const listingsRef = collection(db, 'listings')
 
-            //create query
+            // Create query
             const q = query(
                 listingsRef,
                 where('type', '==', params.categoryName),
@@ -65,51 +44,34 @@ function Category() {
             querySnap.forEach((doc) => {
                 return listings.push({
                     id: doc.id,
-                    data: doc.data()
+                    data: doc.data(),
                 })
             })
             setListings(listings)
             setLoading(false)
-        } catch(error) {
-          console.log(error)
+        } catch (error) {
             toast.error('Could not fetch listings')
         }
-    }
+    }, [params.categoryName, sortBy, sortOrder]) // Include dependencies
 
     useEffect(() => {
         fetchListings()
-    }, [params.categoryName, sortBy, sortOrder])
+    }, [fetchListings])
 
-    const onFetchMoreListings = async () => {
-        try {
-            const listingsRef = collection(db, 'listings')
-
-            const q = query(
-                listingsRef,
-                where('type', '==', params.categoryName),
-                orderBy(sortBy, sortOrder),
-                startAfter(lastFetchedListing),
-                limit(10)
-            )
-
-            const querySnap = await getDocs(q)
-
-            const lastVisible = querySnap.docs[querySnap.docs.length - 1]
-            setLastFetchedListing(lastVisible)
-
-            const listings = []
-
-            querySnap.forEach((doc) => {
-                return listings.push({
-                    id: doc.id,
-                    data: doc.data(),
-                })
-            })
-
-            setListings((prevState) => [...prevState, ...listings])
-            setLoading(false)
-        } catch (error) {
-            toast.error('Could not fetch listings')
+    const handleSortChange = (e) => {
+        const value = e.target.value
+        if (value === 'newest') {
+            setSortBy('timestamp')
+            setSortOrder('desc')
+        } else if (value === 'oldest') {
+            setSortBy('timestamp')
+            setSortOrder('asc')
+        } else if (value === 'price-asc') {
+            setSortBy('regularPrice')
+            setSortOrder('asc')
+        } else if (value === 'price-desc') {
+            setSortBy('regularPrice')
+            setSortOrder('desc')
         }
     }
 
@@ -117,9 +79,7 @@ function Category() {
         <div className='category'>
             <header>
                 <p className='pageHeader'>
-                    {params.categoryName === 'rent'
-                        ? 'Cycles for rent'
-                        : 'Cycles for sale'}
+                    {params.categoryName === 'rent' ? 'Cycles for rent' : 'Cycles for sale'}
                 </p>
             </header>
             
@@ -155,7 +115,7 @@ function Category() {
                     <br />
                     <br />
                     {lastFetchedListing && (
-                        <p className='loadMore' onClick={onFetchMoreListings}>
+                        <p className='loadMore' onClick={fetchListings}>
                             Load More
                         </p>
                     )}
