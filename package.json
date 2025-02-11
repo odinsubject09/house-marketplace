@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "cra-template": "1.2.0",
+    "express": "^4.18.2",
     "firebase": "^11.1.0",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
@@ -16,13 +17,10 @@
     "uuid": "^11.0.3",
     "web-vitals": "^2.1.4"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "scripts": {
-    "dev": "export NODE_OPTIONS=\"--max-old-space-size=4096\" && react-scripts start",
-    "start": "serve -s build",
-    "build": "export NODE_OPTIONS=\"--max-old-space-size=4096\" && react-scripts build",
+    "dev": "react-scripts start",
+    "start": "node server.js",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -36,5 +34,8 @@
     ">0.2%",
     "not dead",
     "not op_mini all"
-  ]
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
