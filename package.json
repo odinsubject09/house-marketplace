@@ -13,16 +13,17 @@
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.2",
     "swiper": "^9.4.1",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "web-vitals": "^2.1.4"
   },
-"scripts": {
-  "dev": "react-scripts start",
-  "start": "react-scripts start",
-  "build": "react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject"
-}
-,  "eslintConfig": {
+  "scripts": {
+    "dev": "react-scripts start",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
