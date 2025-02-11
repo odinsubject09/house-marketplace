@@ -23,13 +23,13 @@ function Profile() {
   const auth = getAuth()
   const [changeDetails, setChangeDetails] = useState(false)
 
-  const getPhoneNumber=async()=>{
+  const getPhoneNumber=useCallback(async()=>{
     const userId = auth.currentUser.uid;
     const userDocRef = doc(db, "users", userId);
     const userDocSnap = await getDoc(userDocRef);
     const userData = userDocSnap.data();
     return (userData.phone)
-  }
+  })
   
   const [formData, setFormData] = useState({
     name: auth.currentUser.displayName,

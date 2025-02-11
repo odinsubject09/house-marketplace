@@ -10,7 +10,7 @@ import Spinner from '../components/Spinner'
 import { storage } from '../firebase.config'
 
 function CreateListing() {
-  const [geolocationEnabled, setGeolocationEnabled] = useState(false)
+  const [geolocationEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     type: 'rent',
