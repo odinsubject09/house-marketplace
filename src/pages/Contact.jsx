@@ -17,6 +17,7 @@ function Contact() {
 
       if (docSnap.exists()) {
         setLandlord(docSnap.data())
+        console.log(docSnap.data())
       } else {
         toast.error('Could not get landlord data')
       }
@@ -26,6 +27,21 @@ function Contact() {
 
   const onChange = (e) => setMessage(e.target.value)
 
+  const handleChatRoom = () => {
+    if (landlord?.name) {
+      const roomName = landlord.name.toLowerCase().replace(/\s+/g, '-');
+      const chatServerUrl = process.env.REACT_APP_CHAT_SERVER_URL || 'http://localhost:8000';
+      window.open(`${chatServerUrl}/${roomName}`, '_blank');
+    } else {
+      toast.error('Could not join chat room - landlord name not available');
+    }
+  }
+  
+  const handleCallClick = () => {
+    const formattedPhone = landlord.phone?.replace(/\D/g, '')
+    window.location.href = `tel:${formattedPhone}`
+  }
+
   const handleWhatsAppClick = () => {
     const formattedPhone = landlord.phone?.replace(/\D/g, '')
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
@@ -33,24 +49,10 @@ function Contact() {
     )}`
     window.open(whatsappUrl, '_blank')
   }
-
-  const handleCallClick = () => {
-    const formattedPhone = landlord.phone?.replace(/\D/g, '')
-    window.location.href = `tel:${formattedPhone}`
-  }
-
-  const handleChatRoom = () => {
-    if (landlord?.name) {
-      const roomName = landlord.name.toLowerCase().replace(/\s+/g, '-')
-      window.open(`http://localhost:8000/${roomName}`, '_blank')
-    } else {
-      toast.error('Could not join chat room - landlord name not available')
-    }
-  }
   return (
     <div className='pageContainer'>
       <header>
-        <p className='pageHeader'>Contact Landlord</p>
+        <p className='pageHeader'>Contact Owner</p>
       </header>
 
       {landlord !== null && (

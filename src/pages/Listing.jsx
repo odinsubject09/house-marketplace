@@ -28,10 +28,10 @@ function Listing() {
     const fetchListing = async () => {
       const docRef = doc(db, 'listings', params.listingId)
       const docSnap = await getDoc(docRef)
-
+      
       if (docSnap.exists()) {
         setListing(docSnap.data())
-        console.log(listing)
+        console.log(docSnap.data())
         setLoading(false)
       }
     }
@@ -148,10 +148,10 @@ function Listing() {
                          
         {auth.currentUser?.uid !== listing.userRef /*check if the listing is not that of the user*/&& (
             <Link
-            to={`/contact/${listing.userRef}?listingName=${listing.name}`}
+            to={`/contact/${listing.userRef}`}
             className='primaryButton'
           >
-            Contact Landlord
+            Contact Owner
           </Link>)
         }
        </div>
